@@ -1,8 +1,8 @@
-pkgs:
-
-pkgs.buildEnv {
-  name = "mac-home";
-  paths = with pkgs; [
+{ pkgs }:
+{
+  username = "user";
+  homeDirectory = "/Users/user";
+  packages = with pkgs; [
     zig
     flashrom
     tree

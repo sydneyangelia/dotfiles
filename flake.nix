@@ -19,6 +19,7 @@
             }
           )
         );
+      dumb-manager = import ./lib/dumb-manager.nix;
     in
     {
       nixosConfigurations = {
@@ -31,9 +32,18 @@
         };
       };
       packages = forAllSystems (pkgs: {
-        # Too lazy to do callPackage...
-        mac-home = (import ./home/mac) pkgs;
+        # mac-home = (import ./home/mac) {inherit pkgs;};
+        mac-home = dumb-manager.configuration {
+          inherit pkgs nixpkgs;
+          module = ./home/mac;
+        };
       });
+      # apps = forAllSystems (pkgs: {
+      #   update-links = {
+      #     type = "app";
+      #     program = "${self.packages.${pkgs.system}.update-links}";
+      #   };
+      # });
       formatter = forAllSystems (pkgs: pkgs.nixfmt-rfc-style);
     };
 }
