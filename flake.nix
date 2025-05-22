@@ -1,10 +1,6 @@
 {
   inputs = {
     nixpkgs.url = "https://channels.nixos.org/nixpkgs-unstable/nixexprs.tar.xz";
-    lix = {
-      url = "https://git.lix.systems/lix-project/lix/archive/main.tar.gz";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
   outputs =
     { self, ... }@inputs:
@@ -13,7 +9,16 @@
       inherit (inputs.nixpkgs) lib;
       specialArgs = { inherit inputs; };
       forAllSystems =
-        function: lib.genAttrs lib.systems.flakeExposed (system: function nixpkgs.legacyPackages.${system});
+        function:
+        lib.genAttrs lib.systems.flakeExposed (
+          system:
+          function (
+            import nixpkgs {
+              inherit system;
+              config.allowUnfree = true;
+            }
+          )
+        );
     in
     {
       nixosConfigurations = {
@@ -25,6 +30,10 @@
           ];
         };
       };
+      packages = forAllSystems (pkgs: {
+        # Too lazy to do callPackage...
+        mac-home = (import ./home/mac) pkgs;
+      });
       formatter = forAllSystems (pkgs: pkgs.nixfmt-rfc-style);
     };
 }
